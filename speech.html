@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EVE AI</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            animation: glow 1.5s infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 10px #00ffe7, 0 0 20px #00ffe7, 0 0 30px #00ffe7;
+            }
+            to {
+                text-shadow: 0 0 20px #00ffe7, 0 0 30px #00ffe7, 0 0 40px #00ffe7;
+            }
+        }
+
+        button {
+            background-color: #00ffe7;
+            border: none;
+            color: #000;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(0, 255, 231, 0.5);
+        }
+
+        button:active {
+            transform: scale(1.05);
+        }
+
+        p {
+            margin-top: 20px;
+            font-size: 1.2rem;
+        }
+
+        #mic-icon {
+            width: 50px;
+            height: 50px;
+            margin-top: 30px;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.2);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome to EVE AI</h1>
+    <button id="start">Start Listening</button>
+    <img id="mic-icon" src="https://cdn-icons-png.flaticon.com/512/724/724692.png" alt="Mic Icon">
+    <p id="output">Press the button and speak a command!</p>
+
+    <script>
+        const output = document.getElementById('output');
+        const startBtn = document.getElementById('start');
+        const micIcon = document.getElementById('mic-icon');
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
+
+        recognition.lang = 'en-US';
+        recognition.interimResults = false;
+
+        recognition.onstart = () => {
+            output.textContent = "Listening...";
+            micIcon.style.animation = "pulse 1.5s infinite";
+        };
+
+        recognition.onspeechend = () => {
+            recognition.stop();
+            micIcon.style.animation = "none";
+        };
+
+        recognition.onresult = (event) => {
+            const command = event.results[0][0].transcript.toLowerCase();
+            output.textContent = `You said: "${command}"`;
+            processCommand(command);
+        };
+
+        recognition.onerror = (event) => {
+            output.textContent = `Error: ${event.error}`;
+            micIcon.style.animation = "none";
+        };
+
+        const processCommand = (command) => {
+            if (command.includes("time")) {
+                const now = new Date();
+                const time = now.toLocaleTimeString();
+                speak(`The time is ${time}`);
+            } else if (command.includes("play")) {
+                const song = command.replace("play", "").trim();
+                speak(`Playing ${song} on YouTube`);
+                window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(song)}`, '_blank');
+            } else if (command.includes("search") || command.includes("how")) {
+                // For any question, it will open Google with the search query
+                const query = command.replace("search", "").replace("how", "").trim();
+                speak(`Searching for ${query}`);
+                window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, '_blank');
+            } else {
+                speak("Sorry, I didn't understand that.");
+            }
+        };
+
+        const speak = (message) => {
+            const synth = window.speechSynthesis;
+            const utterance = new SpeechSynthesisUtterance(message);
+            synth.speak(utterance);
+        };
+
+        startBtn.addEventListener('click', () => {
+            recognition.start();
+        });
+    </script>
+</body>
+</html>
